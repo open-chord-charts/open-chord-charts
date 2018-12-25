@@ -1,0 +1,119 @@
+<h1>{chart.title()}</h1>
+
+<ul>
+  <li>time: {chart.info.time.join("/")}</li>
+  <li>
+    key:
+    <select on:change="set({key: event.target.value})">
+      {#each keys as key}
+        <option selected={key === chart.info.key}>{key}</option>
+      {/each}
+    </select>
+  </li>
+  <li>composer: {chart.info.composer}</li>
+  <li>date: {chart.info.date}</li>
+</ul>
+
+<table border=1>
+  <tbody>
+    {#each chart.sections as section}
+      {#each rows[section] as row, rowIndex}
+        <tr>
+          <th scope="row">
+            {rowIndex === 0 ? section : ""}
+          </th>
+          {#each row as bar}
+            <td>
+              {#if Array.isArray(bar)}
+                {#each bar as {chord}}
+                  <span style="margin-right: 1em" on:click="playChord(chord)">
+                    {chord.name}
+                  </span>
+                {/each}
+              {:else}
+                <span on:click="playChord(bar.chord)">
+                  {bar.repeat ? "–" : bar.chord.name}
+                </span>
+              {/if}
+            </td>
+          {/each}
+        </tr>
+      {/each}
+    {/each}
+  </tbody>
+</table>
+
+<script>
+  import { map, pathOr, pipe, splitEvery, sum } from "ramda"
+  import { note } from "sharp11"
+
+  function toBars(chords, nbBeatsPerBar) {
+    const bars = []
+    let currentBar = []
+    chords.forEach(chord => {
+      const nbBars = chord.duration.beats / nbBeatsPerBar
+      if (nbBars < 1) {
+        currentBar.push(chord)
+        if (sum(currentBar.map(({ duration }) => duration.value())) == nbBeatsPerBar) {
+          bars.push(currentBar)
+          currentBar = []
+        }
+      } else {
+        for (let i = 0; i < nbBars; i++) {
+          bars.push({
+            ...chord,
+            repeat: i > 0
+          })
+        }
+      }
+    })
+    return bars
+  }
+
+  function transpose(chordWithDuration, chart, key) {
+    if (!key || key === chart.info.key) {
+      return chordWithDuration
+    }
+    const { chord, duration } = chordWithDuration
+    const interval = note.create(chart.info.key).getInterval(key)
+    return {
+      duration,
+      chord: chord.transpose(interval)
+    }
+  }
+
+  export default {
+    data() {
+      return {
+        keys: ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
+      }
+    },
+    computed: {
+      rows({ chart, key }) {
+        const { sections, content, info } = chart
+        const nbBeatsPerBar = pathOr(4, ["time", 0], info.time)
+        return map(
+          chords =>
+            pipe(
+              map(chordWithDuration => transpose(chordWithDuration, chart, key)),
+              chords => toBars(chords, nbBeatsPerBar),
+              splitEvery(8)
+            )(chords),
+          content
+        )
+      }
+    },
+    methods: {
+      async playChord(chord) {
+        const audio = (await import("sharp11-web-audio")).default // Doesn't work server-side.
+        audio.init(function(err, { play }) {
+          if (err) {
+            console.error(err)
+            return
+          }
+          play(chord)
+        })
+      }
+    }
+  }
+</script>

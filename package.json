@@ -1,5 +1,6 @@
 {
-  "name": "TODO",
+  "name": "open-chord-charts",
+  "private": true,
   "description": "TODO",
   "version": "0.0.1",
   "scripts": {
@@ -12,8 +13,13 @@
     "test": "run-p --race dev cy:run"
   },
   "dependencies": {
+    "@sindresorhus/slugify": "^0.6.0",
     "compression": "^1.7.1",
     "polka": "^0.4.0",
+    "ramda": "^0.26.1",
+    "sharp11": "^2.0.2",
+    "sharp11-irb": "^1.0.0",
+    "sharp11-web-audio": "^1.0.5",
     "sirv": "^0.2.0"
   },
   "devDependencies": {

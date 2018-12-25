@@ -7,6 +7,10 @@ const dev = mode === "development"
 
 module.exports = {
   client: {
+    node: {
+      // Workaround for sharp11 module.
+      fs: "empty"
+    },
     entry: config.client.entry(),
     output: config.client.output(),
     resolve: {

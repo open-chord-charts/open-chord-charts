@@ -1,0 +1,31 @@
+<svelte:head>
+  <title>{chart.title()}</title>
+</svelte:head>
+
+<Chart {chart} key={chart.info.key} />
+
+<script>
+  import { chart } from "sharp11"
+  export default {
+    components: {
+      Chart: "../../components/Chart.html"
+    },
+    async preload({ params, query }) {
+      // the `slug` parameter is available because
+      // this file is called [slug].html
+      const res = await this.fetch(`charts/${params.slug}.json`)
+      const data = await res.json()
+
+      if (res.status === 200) {
+        try {
+          // return { chart: chart.create(sections, content, info) }
+          return { chart: chart.load(data) }
+        } catch (err) {
+          this.error(500, `Invalid chart data: ${err.message}`)
+        }
+      } else {
+        this.error(res.status, data.message)
+      }
+    }
+  }
+</script>
