@@ -2,17 +2,23 @@
   <title>charts</title>
 </svelte:head>
 
-<h1>Charts</h1>
+<div class="container mx-auto px-4">
+  <h1 class="mb-4 font-normal">Charts</h1>
 
-<ul>
-  {#each charts as chart}
-    <!-- we're using the non-standard `rel=prefetch` attribute to
-        tell Sapper to load the data for the page as soon as
-        the user hovers over the link or taps it, instead of
-        waiting for the 'click' event -->
-    <li><a rel='prefetch' href='charts/{chart.info.slug}'>{chart.info.title}</a></li>
-  {/each}
-</ul>
+  <ul class="list-reset leading-normal">
+    {#each charts as chart}
+      <!-- we're using the non-standard `rel=prefetch` attribute to
+          tell Sapper to load the data for the page as soon as
+          the user hovers over the link or taps it, instead of
+          waiting for the 'click' event -->
+      <li>
+        <a rel="prefetch" href="charts/{chart.info.slug}" class="no-underline hover:underline">
+          {chart.info.title}
+        </a>
+      </li>
+    {/each}
+  </ul>
+</div>
 
 <script>
   export default {

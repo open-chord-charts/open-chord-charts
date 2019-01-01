@@ -1,14 +1,17 @@
 <Nav segment={child.segment}/>
 
-<main>
+<main class="font-sans pt-8">
   <svelte:component this={child.component} {...child.props}/>
 </main>
 
+<footer class="border-t font-sans mt-32 px-4 py-6">
+  <a class="no-underline hover:underline" href="https://github.com/open-chord-charts/open-chord-charts">Source code</a>
+</footer>
 
 <script>
   export default {
     components: {
       Nav: "../components/Nav.html"
     }
-  };
+  }
 </script>

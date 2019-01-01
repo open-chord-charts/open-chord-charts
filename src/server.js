@@ -3,6 +3,8 @@ import polka from "polka"
 import compression from "compression"
 import * as sapper from "../__sapper__/server.js"
 
+import "./styles/global.css"
+
 const { PORT, NODE_ENV } = process.env
 const dev = NODE_ENV === "development"
 

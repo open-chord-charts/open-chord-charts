@@ -1,6 +1,6 @@
-<h1>{chart.title()}</h1>
+<h1 class="mb-4 font-normal">{chart.title()}</h1>
 
-<ul>
+<ul class="my-8 leading-normal">
   <li>time: {chart.info.time.join("/")}</li>
   <li>
     key:
@@ -14,26 +14,41 @@
   <li>date: {chart.info.date}</li>
 </ul>
 
-<table border=1>
+<table class="my-8 table-fixed text-lg">
   <tbody>
     {#each chart.sections as section}
       {#each rows[section] as row, rowIndex}
         <tr>
-          <th scope="row">
-            {rowIndex === 0 ? section : ""}
+          <th scope="row" class="border border-black h-16">
+            <div class="text-left mx-2">
+              {rowIndex === 0 ? section : ""}
+            </div>
           </th>
           {#each row as bar}
-            <td>
+            <td class="border border-black w-24 h-16 p-0">
               {#if Array.isArray(bar)}
-                {#each bar as {chord}}
-                  <span style="margin-right: 1em" on:click="playChord(chord)">
-                    {chord.name}
-                  </span>
-                {/each}
+                {#if bar.length === 2}
+                  <div class="diagonal h-full relative">
+                    <span class="absolute pin-t pin-l ml-1 mt-1" on:click="playChord(chord)">
+                      {bar[0].chord.name}
+                    </span>
+                    <span class="absolute pin-b pin-r mr-1 mb-1" on:click="playChord(chord)">
+                      {bar[1].chord.name}
+                    </span>
+                  </div>
+                {:else}
+                  <div class="h-full">
+                    {#each bar as {chord}}
+                      <span on:click="playChord(chord)">
+                        {chord.name}
+                      </span>
+                    {/each}
+                  </div>
+                {/if}
               {:else}
-                <span on:click="playChord(bar.chord)">
+                <div class="text-center" on:click="playChord(bar.chord)">
                   {bar.repeat ? "–" : bar.chord.name}
-                </span>
+                </div>
               {/if}
             </td>
           {/each}
@@ -117,3 +132,16 @@
     }
   }
 </script>
+
+<style>
+  .diagonal {
+    background: linear-gradient(
+      to top left,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0) calc(50% - 0.6px),
+      rgba(0, 0, 0, 1) 50%,
+      rgba(0, 0, 0, 0) calc(50% + 0.6px),
+      rgba(0, 0, 0, 0) 100%
+    );
+  }
+</style>
