@@ -30,24 +30,24 @@
                 {#if bar.length === 2}
                   <div class="diagonal h-full relative">
                     <span class="absolute pin-t pin-l ml-1 mt-1" on:click="playChord(chord)">
-                      {bar[0].chord.name}
+                      {chordName(bar[0].chord)}
                     </span>
                     <span class="absolute pin-b pin-r mr-1 mb-1" on:click="playChord(chord)">
-                      {bar[1].chord.name}
+                      {chordName(bar[1].chord)}
                     </span>
                   </div>
                 {:else}
                   <div class="h-full">
                     {#each bar as {chord}}
-                      <span on:click="playChord(chord)">
-                        {chord.name}
-                      </span>
+                      <div on:click="playChord(chord)">
+                        {chordName(chord)}
+                      </div>
                     {/each}
                   </div>
                 {/if}
               {:else}
                 <div class="text-center" on:click="playChord(bar.chord)">
-                  {bar.repeat ? "–" : bar.chord.name}
+                  {bar.repeat ? "–" : chordName(bar.chord)}
                 </div>
               {/if}
             </td>
@@ -116,6 +116,11 @@
             )(chords),
           content
         )
+      }
+    },
+    helpers: {
+      chordName({ root, formattedSymbol }) {
+        return `${root.name}${formattedSymbol}`
       }
     },
     methods: {
