@@ -6,57 +6,76 @@
     key:
     <select on:change="set({key: event.target.value})">
       {#each keys as key}
-        <option selected={key === chart.info.key}>{key}</option>
+        <option selected={key === chart.info.key} value={key}>
+          {key}{chart.info.minor ? " minor" : ""}{key === chart.info.key ? " (default)" : ""}
+        </option>
       {/each}
     </select>
   </li>
   <li>composer: {chart.info.composer}</li>
   <li>date: {chart.info.date}</li>
+  <li>source: <a href="{chart.info.sourceUrl}" target="_blank">{chart.info.source}</a></li>
 </ul>
 
-<table class="my-8 table-fixed text-lg">
-  <tbody>
-    {#each chart.sections as section}
-      {#each rows[section] as row, rowIndex}
-        <tr>
-          <th scope="row" class="border border-black h-16">
-            <div class="text-left mx-2">
-              {rowIndex === 0 ? section : ""}
-            </div>
-          </th>
-          {#each row as bar}
-            <td class="border border-black w-24 h-16 p-0">
-              {#if Array.isArray(bar)}
-                {#if bar.length === 2}
-                  <div class="diagonal h-full relative">
-                    <span class="absolute pin-t pin-l ml-1 mt-1" on:click="playChord(chord)">
-                      {chordName(bar[0].chord)}
-                    </span>
-                    <span class="absolute pin-b pin-r mr-1 mb-1" on:click="playChord(chord)">
-                      {chordName(bar[1].chord)}
-                    </span>
+<form>
+  <label title="When enabled you can click on chords to listen to them">
+    <input type="checkbox" bind:checked="enableAudio" />
+    Enable audio
+  </label>
+</form>
+
+<div class="overflow-x-auto">
+  <table class="my-8 table-fixed text-lg">
+    <tbody>
+      {#each sectionsWithRepetitions as section}
+        {#each rows[section.name] as row, rowIndex}
+          <tr>
+            <th scope="row" class="border border-black p-0 w-6">
+              <div class="text-left mx-2">
+                {rowIndex === 0 && !section.repeat ? section.name : ""}
+              </div>
+            </th>
+            {#each row as bar}
+              <td class="border border-black p-0">
+                {#if section.repeat}
+                  <div class="one-chord-bar h-12 w-24 flex items-center justify-center">
+                    –
                   </div>
+                {:elseif Array.isArray(bar)}
+                  {#if bar.length === 2}
+                    <div class="two-chords-bar h-16 w-24 relative">
+                      <svg class="absolute w-full h-full">
+                        <line x1="0" y1="100%" x2="100%" y2="0" class="stroke-current" />
+                      </svg>
+                      <span class="absolute pin-t pin-l p-1 w-1/2" on:click="playChord(bar[0].chord)">
+                        {chordName(bar[0].chord)}
+                      </span>
+                      <span class="absolute pin-b pin-r p-1 w-1/2 text-right" on:click="playChord(bar[1].chord)">
+                        {chordName(bar[1].chord)}
+                      </span>
+                    </div>
+                  {:else}
+                    <div class="multi-chords-bar h-16 w-24">
+                      {#each bar as {chord}}
+                        <div on:click="playChord(chord)">
+                          {chordName(chord)}
+                        </div>
+                      {/each}
+                    </div>
+                  {/if}
                 {:else}
-                  <div class="h-full">
-                    {#each bar as {chord}}
-                      <div on:click="playChord(chord)">
-                        {chordName(chord)}
-                      </div>
-                    {/each}
+                  <div class="one-chord-bar h-16 w-24 flex items-center justify-center" on:click="playChord(bar.chord)">
+                    <span>{bar.repeat ? "–" : chordName(bar.chord)}</span>
                   </div>
                 {/if}
-              {:else}
-                <div class="text-center" on:click="playChord(bar.chord)">
-                  {bar.repeat ? "–" : chordName(bar.chord)}
-                </div>
-              {/if}
-            </td>
-          {/each}
-        </tr>
+              </td>
+            {/each}
+          </tr>
+        {/each}
       {/each}
-    {/each}
-  </tbody>
-</table>
+    </tbody>
+  </table>
+</div>
 
 <script>
   import { map, pathOr, pipe, splitEvery, sum } from "ramda"
@@ -100,7 +119,8 @@
   export default {
     data() {
       return {
-        keys: ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
+        enableAudio: false,
+        keys: ["Ab", "A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G"]
       }
     },
     computed: {
@@ -116,6 +136,18 @@
             )(chords),
           content
         )
+      },
+      sectionsWithRepetitions({ chart }) {
+        const { sections } = chart
+        const result = []
+        sections.forEach(section => {
+          const item = { name: section }
+          if (result.length > 0 && result[result.length - 1].name === section) {
+            item.repeat = true
+          }
+          result.push(item)
+        })
+        return result
       }
     },
     helpers: {
@@ -123,30 +155,20 @@
         return `${root.name}${formattedSymbol}`
       }
     },
+    async oncreate() {
+      const Tone = (await import("tone")).default // Doesn't work server-side because "window" is not defined.
+      this.synth = new Tone.PolySynth(4, Tone.Synth).toMaster()
+    },
     methods: {
-      async playChord(chord) {
-        const audio = (await import("sharp11-web-audio")).default // Doesn't work server-side.
-        audio.init(function(err, { play }) {
-          if (err) {
-            console.error(err)
-            return
-          }
-          play(chord)
-        })
+      playChord(chord) {
+        const { enableAudio } = this.get()
+        if (!enableAudio) {
+          return
+        }
+        const octave = 4
+        const notes = chord.chord.map(note => `${note.name}${octave}`)
+        this.synth.triggerAttackRelease(notes, "8n")
       }
     }
   }
 </script>
-
-<style>
-  .diagonal {
-    background: linear-gradient(
-      to top left,
-      rgba(0, 0, 0, 0) 0%,
-      rgba(0, 0, 0, 0) calc(50% - 0.6px),
-      rgba(0, 0, 0, 1) 50%,
-      rgba(0, 0, 0, 0) calc(50% + 0.6px),
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-</style>

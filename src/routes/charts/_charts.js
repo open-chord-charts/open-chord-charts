@@ -1,7 +1,4 @@
-// Ordinarily, you'd generate this data from markdown files in your
-// repo, or fetch them from a database of some kind. But in order to
-// avoid unnecessary dependencies in the starter template, and in the
-// service of obviousness, we're just going to leave it here.
+// Load charts from sharp11-irb (irealpro corpus), add slugs and tags and sort them.
 
 // This file is called `_charts.js` rather than `charts.js`, because
 // we don't want to create an `/charts/charts` route — the leading
@@ -14,6 +11,8 @@ charts.forEach(chart => {
   chart.info.title = chart.info.title.trim()
   if (!chart.info.slug) {
     chart.info.slug = slugify(chart.info.title)
+    chart.info.source = "irb-corpus"
+    chart.info.sourceUrl = "https://github.com/jsrmath/sharp11-irb"
   }
 })
 

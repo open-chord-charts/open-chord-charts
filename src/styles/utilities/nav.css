@@ -1,0 +1,13 @@
+.nav-item-selected {
+    position: relative;
+}
+
+.nav-item-selected::after {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    bottom: -1px;
+    width: calc(100% - 1rem);
+    height: 2px;
+    background-color: config("colors.orange-dark");
+}

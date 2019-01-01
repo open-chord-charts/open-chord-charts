@@ -19,8 +19,8 @@
     "ramda": "^0.26.1",
     "sharp11": "^2.0.2",
     "sharp11-irb": "^1.0.0",
-    "sharp11-web-audio": "^1.0.5",
-    "sirv": "^0.2.0"
+    "sirv": "^0.2.0",
+    "tone": "^0.12.80"
   },
   "devDependencies": {
     "@fullhuman/postcss-purgecss": "^1.1.0",
