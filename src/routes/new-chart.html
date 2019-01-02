@@ -1,0 +1,76 @@
+<svelte:head>
+  <title>New chart</title>
+</svelte:head>
+
+<div class="mx-auto px-4">
+  <h1 class="mb-4 font-normal">New chart</h1>
+  <h2 class="mb-4 font-normal">
+    from
+    <a href="https://www.irealb.com/forums/" target="_blank">
+      iRealPro
+    </a>
+  </h2>
+
+  <form on:submit="view(event)">
+    <div>
+      <textarea bind:value="text" class="border w-full h-64" placeholder="irealb://... or irealbook://..."></textarea>
+    </div>
+    <div>
+      <button type="submit" class="bg-blue rounded text-white px-4 py-2">View</button>
+    </div>
+  </form>
+
+  {#if chart}
+    <div class="my-8">
+      <Chart {chart} key={chart.info.key} />
+    </div>
+  {/if}
+</div>
+
+<script>
+  import { chart, chord, duration } from "sharp11"
+  import iRealReader from "ireal-reader"
+
+  function iRealToSharp11(song) {
+    const { composer, key, title } = song
+    const { measures, timeSignature } = song.music
+    const time = [parseInt(timeSignature[1]), parseInt(timeSignature[2])]
+    const sections = ["A"]
+
+    const chords = []
+    measures.forEach(measure => {
+      measure.forEach(chordName => {
+        const beats = time[1] / measure.length
+        chords.push({
+          chord: chord.create(chordName),
+          duration: new duration.Duration(beats)
+        })
+      })
+    })
+    const content = { A: chords }
+    const info = { composer, key, time, title }
+    return chart.create(sections, content, info)
+  }
+
+  export default {
+    components: {
+      Chart: "../components/Chart.html"
+    },
+    data() {
+      return {
+        chart: null,
+        text: ""
+      }
+    },
+    methods: {
+      view(event) {
+        event.preventDefault()
+        const { text } = this.get()
+        const playlist = new iRealReader(text)
+        const song = playlist.songs[0]
+        const chart = iRealToSharp11(song)
+        this.set({ chart, song })
+      }
+    }
+  }
+</script>

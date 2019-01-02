@@ -15,6 +15,7 @@
   "dependencies": {
     "@sindresorhus/slugify": "^0.6.0",
     "compression": "^1.7.1",
+    "ireal-reader": "^1.2.5",
     "polka": "^0.4.0",
     "ramda": "^0.26.1",
     "sharp11": "^2.0.2",

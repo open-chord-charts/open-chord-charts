@@ -12,9 +12,24 @@
       {/each}
     </select>
   </li>
-  <li>composer: {chart.info.composer}</li>
-  <li>date: {chart.info.date}</li>
-  <li>source: <a href="{chart.info.sourceUrl}" target="_blank">{chart.info.source}</a></li>
+  {#if chart.info.composer}
+    <li>composer: {chart.info.composer}</li>
+  {/if}
+  {#if chart.info.date}
+    <li>date: {chart.info.date}</li>
+  {/if}
+  {#if chart.info.source}
+    <li>
+      source:
+      {#if chart.info.sourceUrl}
+        <a href="{chart.info.sourceUrl}" target="_blank">
+          {chart.info.source}
+        </a>
+      {:else}
+        {chart.info.source}
+      {/if}
+    </li>
+  {/if}
 </ul>
 
 <form>
@@ -152,7 +167,18 @@
     },
     helpers: {
       chordName({ root, formattedSymbol }) {
-        return `${root.name}${formattedSymbol}`
+        // Custom symbols for Open Chord Charts
+        const symbolsTranslationTable = {
+          M: "",
+          m7b5: "ø",
+          dim: "o",
+          dim7: "o"
+        }
+        let symbol = symbolsTranslationTable[formattedSymbol]
+        if (typeof symbol === "undefined") {
+          symbol = formattedSymbol
+        }
+        return `${root.name}${symbol}`
       }
     },
     async oncreate() {
