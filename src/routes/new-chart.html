@@ -13,7 +13,7 @@
 
   <form on:submit="view(event)">
     <div>
-      <textarea bind:value="text" class="border w-full h-64" placeholder="irealb://... or irealbook://..."></textarea>
+      <textarea bind:value="text" class="border w-full h-64" spellcheck="{false}" placeholder="irealb://... or irealbook://..."></textarea>
     </div>
     <div>
       <button type="submit" class="bg-blue rounded text-white px-4 py-2">View</button>
