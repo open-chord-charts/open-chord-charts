@@ -28,3 +28,4 @@ Open up [localhost:3000](http://localhost:3000).
 - [ ] export to PDF
 - [ ] allow adding interpretations, dates, links to youtube
 - [ ] handle time signatures other than 4/4
+- [ ] detect multi-bar changes like "I VI II V"
